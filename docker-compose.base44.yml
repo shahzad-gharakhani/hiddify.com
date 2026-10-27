@@ -1,0 +1,38 @@
+# Base44 development environment for the Hiddify docs site (mkdocs-material).
+#
+# Runs the site from the cloned source with `mkdocs serve` (live reload), so
+# edits to docs/, includes/, overrides/ and mkdocs.yml appear in the preview
+# without rebuilding the image. The Python toolchain is installed into the image
+# by .base44/Dockerfile; the repository is bind-mounted at /app.
+#
+# No environment variables or external credentials are required: Google
+# Analytics, giscus comments and the Gurubase widget all use public client-side
+# IDs that are already committed in mkdocs.yml / overrides/.
+
+services:
+  docs:
+    build:
+      context: .base44
+      dockerfile: Dockerfile
+    labels:
+      base44.project: "Hiddify Docs"
+      base44.kind: web
+      base44.port: "3000"
+    working_dir: /app
+    # `--dev-addr` binds all interfaces so the preview proxy can reach the site.
+    # DEV / mkdocs.yml `exclude` stays unset, matching the production build.
+    command:
+      - sh
+      - -ec
+      - exec mkdocs serve --dev-addr 0.0.0.0:8000
+    ports:
+      - "3000:8000"
+    volumes:
+      - ./:/app
+    restart: on-failure
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/ >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 120s
