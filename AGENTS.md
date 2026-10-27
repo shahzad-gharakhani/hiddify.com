@@ -16,6 +16,13 @@ The site is live on host port 3000 (container port 8000).
 - `mkdocs-rss-plugin` is newer than the mkdocs 1.5.3 from the fork and logs a dependency
   conflict; the site still builds. Its "Unable to read git logs" warnings are expected —
   the build writes to a temp dir outside the git repo.
+- Expected log noise, none of it a setup fault: `[RSS-plugin]: Config error:
+  date_from_meta.default_time ...` appears once per rebuild because the plugin overwrites
+  its own config value with a `datetime`; it falls back to the same `00:00`, and versions
+  1.13.4/1.15.0/1.19.0 all do it. `NavPluginOrder: The plugin "material/tags" /
+  "mkdocs-nav-weight" might not work correctly when placed before awesome-pages` is an
+  informational note about the plugin order in this repo's own `mkdocs.yml`. Don't chase
+  either one while the site serves correctly.
 - `git-authors`, `git-revision-date-localized` and `rss` need git metadata, which is why
   the whole repo (including `.git`) is bind-mounted at `/app`.
 - Tailwind output is committed at `docs/assets/css/site.css`. Only re-run
